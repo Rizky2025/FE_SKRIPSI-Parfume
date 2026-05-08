@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer components {
+  /* --- AUTH & FORM CLASSES (Dari tahap sebelumnya) --- */
+  .auth-card {
+    @apply bg-white p-8 rounded-lg shadow-md w-full max-w-sm;
+  }
+  .form-input {
+    @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+  .btn-primary {
+    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 w-full transition duration-300 disabled:opacity-50;
+  }
+  .form-label {
+    @apply block text-gray-700 text-sm font-bold mb-2;
+  }
+
+  /* --- KONSULTASI (INDEX.ASTRO) CUSTOM CLASSES --- */
+  .chip {
+    @apply px-4 py-2 border border-[#c9a96e40] rounded-sm text-[#ccc4b4] text-xs font-medium tracking-widest uppercase cursor-pointer transition-all duration-300 relative overflow-hidden bg-transparent;
+  }
+  .chip:hover {
+    @apply border-[#c9a96e] text-[#c9a96e];
+  }
+  .chip.active {
+    @apply border-[#c9a96e] text-[#0d0b09] font-bold bg-gradient-to-br from-[#c9a96e] to-[#7a6240];
+  }
+  .btn-gold {
+    @apply w-full p-4 bg-transparent border border-[#c9a96e] text-[#c9a96e] text-xs font-bold tracking-[0.4em] uppercase cursor-pointer transition-all duration-300 rounded-sm hover:bg-[#c9a96e] hover:text-[#0d0b09];
+  }
+  .card-parfum {
+    @apply bg-[#1a1713] border border-[#c9a96e40] rounded-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-[#c9a96e] cursor-pointer;
+  }
+  .btn-save-parfum {
+    @apply w-full p-2 bg-[#2a2520] border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-semibold tracking-widest uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-2;
+  }
+  .btn-save-parfum:hover:not(:disabled) {
+    @apply border-[#c9a96e] text-[#c9a96e];
+  }
+  .btn-save-parfum.saved {
+    @apply border-[#c9a96e] text-[#c9a96e] opacity-70 cursor-default;
+  }
+
+  /* --- FAVORITES (FAVORITES.ASTRO) CUSTOM CLASSES --- */
+  .fav-card {
+    @apply bg-[#1a1713] border border-[#c9a96e40] rounded-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-[#c9a96e];
+  }
+  .btn-remove {
+    @apply w-full p-2 bg-transparent border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-semibold tracking-widest uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-2;
+  }
+  .btn-remove:hover:not(:disabled) {
+    @apply border-red-500 text-red-500;
+  }
+}

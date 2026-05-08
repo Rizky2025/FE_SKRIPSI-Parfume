@@ -1,0 +1,113 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Register Page">
+  <div class="flex items-center justify-center h-screen">
+    <div class="auth-card relative">
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-green-500 text-white rounded-full p-4 shadow-lg">
+        <i class="fa-solid fa-user-plus fa-xl"></i>
+      </div>
+
+      <h2 class="text-2xl font-bold mt-4 mb-6 text-center text-gray-800">Daftar Akun Baru</h2>
+
+      <form id="registerForm">
+        <div class="mb-4">
+          <label class="form-label" for="email">Email</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa-solid fa-envelope"></i>
+            </span>
+            <input class="form-input pl-10 focus:ring-green-500" id="email" type="email" placeholder="contoh@email.com" required />
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <label class="form-label" for="password">Password (Min. 6 Karakter)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input class="form-input pl-10 focus:ring-green-500" id="password" type="password" placeholder="********" required minlength="6" />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-300 w-full transition duration-300 flex justify-center items-center gap-2 disabled:opacity-50" type="submit" id="registerBtn">
+            <span>Daftar Sekarang</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+          <div class="text-center text-sm">
+             Sudah punya akun? <a href="/login" class="text-blue-500 hover:text-blue-800 transition">Login di sini</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const RegisterManager = {
+      config: {
+        apiUrl: 'http://localhost:3000/api/register',
+        redirectUrl: '/login'
+      },
+      elements: {
+        form: document.getElementById('registerForm'),
+        registerBtn: document.getElementById('registerBtn'),
+        emailInput: document.getElementById('email'),
+        passwordInput: document.getElementById('password'),
+      },
+
+      showToast(message, icon = 'success') {
+        // @ts-ignore
+        const Toast = Swal.mixin({
+          toast: true, position: "top-end", showConfirmButton: false, timer: 3000, timerProgressBar: true
+        });
+        Toast.fire({ icon, title: message });
+      },
+
+      setLoading(isLoading) {
+        const { registerBtn } = this.elements;
+        registerBtn.disabled = isLoading;
+        registerBtn.innerHTML = isLoading 
+          ? '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...' 
+          : '<span>Daftar Sekarang</span> <i class="fa-solid fa-paper-plane"></i>';
+      },
+
+      async handleRegister(e) {
+        e.preventDefault();
+        this.setLoading(true);
+
+        try {
+          const response = await fetch(this.config.apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: this.elements.emailInput.value,
+              password: this.elements.passwordInput.value
+            })
+          });
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Terjadi kesalahan saat mendaftar');
+
+          this.showToast(data.message, 'success');
+          this.elements.form.reset();
+          
+          setTimeout(() => window.location.href = this.config.redirectUrl, 1500);
+
+        } catch (error) {
+          this.showToast(error.message, 'error');
+        } finally {
+          this.setLoading(false);
+        }
+      },
+
+      init() {
+        this.elements.form?.addEventListener('submit', (e) => this.handleRegister(e));
+      }
+    };
+
+    RegisterManager.init();
+  </script>
+</MainLayout>

@@ -1,0 +1,123 @@
+---
+// src/pages/login.astro
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Login Page">
+  <div class="flex items-center justify-center h-screen">
+    <div class="auth-card relative">
+      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white rounded-full p-4 shadow-lg">
+        <i class="fa-solid fa-user fa-xl"></i>
+      </div>
+
+      <h2 class="text-2xl font-bold mt-4 mb-6 text-center text-gray-800">Silakan Login</h2>
+      
+      <form id="loginForm">
+        <div class="mb-4">
+          <label class="form-label" for="email">Email</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa-solid fa-envelope"></i>
+            </span>
+            <input class="form-input pl-10" id="email" type="email" placeholder="contoh@email.com" required />
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <label class="form-label" for="password">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input class="form-input pl-10" id="password" type="password" placeholder="********" required />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <button class="btn-primary flex justify-center items-center gap-2" type="submit" id="loginBtn">
+            <span>Masuk</span>
+            <i class="fa-solid fa-right-to-bracket"></i>
+          </button>
+        </div>
+        
+        <div class="mt-4 text-center text-sm">
+           Belum punya akun? <a href="/register" class="text-blue-500 hover:text-blue-800 transition">Register di sini</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const AuthManager = {
+      config: {
+        apiUrl: 'http://localhost:3000/api/login',
+        redirectUrl: '/app'
+      },
+      elements: {
+        form: document.getElementById('loginForm'),
+        loginBtn: document.getElementById('loginBtn'),
+        emailInput: document.getElementById('email'),
+        passwordInput: document.getElementById('password'),
+      },
+
+      // Konfigurasi Sweet Alert Toast
+      showToast(message, icon = 'success') {
+        // @ts-ignore - Swal di-load via CDN di Layout
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+        Toast.fire({ icon, title: message });
+      },
+
+      setLoading(isLoading) {
+        const { loginBtn } = this.elements;
+        loginBtn.disabled = isLoading;
+        loginBtn.innerHTML = isLoading 
+          ? '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...' 
+          : '<span>Masuk</span> <i class="fa-solid fa-right-to-bracket"></i>';
+      },
+
+      async handleLogin(e) {
+        e.preventDefault();
+        this.setLoading(true);
+        
+        try {
+          const response = await fetch(this.config.apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: this.elements.emailInput.value,
+              password: this.elements.passwordInput.value
+            })
+          });
+          
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Login Gagal, periksa kredensial Anda.');
+          
+         // Sukses memanggil Sweet Alert
+            this.showToast('Login Berhasil! Mengalihkan...', 'success');
+            localStorage.setItem('access_token', data.session.access_token);
+            // Tambahkan baris di bawah ini untuk menyimpan user_id
+            localStorage.setItem('user_id', data.user.id); 
+
+            setTimeout(() => window.location.href = this.config.redirectUrl, 1500);
+        } catch (err) {
+          // Error memanggil Sweet Alert tipe pop-up atau toast
+          this.showToast(err.message, 'error');
+        } finally {
+          this.setLoading(false);
+        }
+      },
+
+      init() {
+        this.elements.form?.addEventListener('submit', (e) => this.handleLogin(e));
+      }
+    };
+    
+    AuthManager.init();
+  </script>
+</MainLayout>

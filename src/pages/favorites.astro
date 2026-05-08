@@ -1,0 +1,236 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+
+// Tambahkan variabel ini untuk menghindari error parser Astro
+const skeletons = [1, 2, 3, 4, 5];
+---
+
+<MainLayout title="Favorit Saya — La Parfumerie">
+ <style>
+    :root {
+      --gold: #c9a96e; --gold-dim: #7a6240;
+      --ink: #0d0b09; --ink-soft: #1a1713;
+      --cream: #f5f0e8; --cream-dim: #ccc4b4;
+    }
+    body { background-color: var(--ink); color: var(--cream); font-family: 'Montserrat', sans-serif;}
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 60% 50% at 20% 10%, rgba(201,169,110,0.07) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 60% at 80% 80%, rgba(201,169,110,0.05) 0%, transparent 70%),
+                  radial-gradient(ellipse 80% 30% at 50% 50%, rgba(13,11,9,0.6) 0%, transparent 100%);
+    }
+    .page-wrap { position: relative; z-index: 1; }
+  </style>
+
+  <div class="page-wrap">
+    <nav class="flex items-center justify-between p-5 px-10 border-b border-[#c9a96e40] sticky top-0 bg-[#0d0b09eb] backdrop-blur-md z-50">
+      <a href="/app" class="text-[13px] font-bold tracking-[0.3em] uppercase text-[#c9a96e]">
+        <i class="fa-solid fa-flask-vial mr-2 text-[11px]"></i>La Parfumerie
+      </a>
+      <div class="flex gap-3">
+        <a href="/app" class="flex items-center gap-2 px-5 py-2 border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-bold tracking-[0.3em] uppercase rounded-sm hover:border-[#c9a96e] hover:text-[#c9a96e] transition">
+          <i class="fa-solid fa-arrow-left"></i> Kembali
+        </a>
+        <button id="btnLogout" class="flex items-center gap-2 px-5 py-2 border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-bold tracking-[0.3em] uppercase rounded-sm hover:border-red-500 hover:text-red-500 transition">
+          <i class="fa-solid fa-right-from-bracket"></i> Keluar
+        </button>
+      </div>
+    </nav>
+
+    <header class="text-center pt-14 pb-10 px-6">
+      <div class="text-[10px] font-semibold tracking-[0.35em] uppercase text-[#c9a96e] mb-4"><i class="fa-solid fa-heart"></i>&ensp;Koleksi Pribadi</div>
+      <h1 class="text-4xl md:text-5xl font-light tracking-widest uppercase text-[#f5f0e8] m-0">Favorit <span class="text-[#c9a96e] italic font-light">Saya</span></h1>
+      <div class="flex items-center justify-center gap-4 mt-5 max-w-[300px] mx-auto text-[#7a6240]">
+        <div class="flex-1 h-px bg-gradient-to-r from-transparent to-[#7a6240]"></div>
+        <i class="fa-solid fa-star text-[8px] text-[#c9a96e]"></i>
+        <div class="flex-1 h-px bg-gradient-to-l from-transparent to-[#7a6240]"></div>
+      </div>
+      <p id="header-count" class="text-[11px] tracking-[0.15em] text-[#ccc4b4] mt-4">Memuat koleksi&hellip;</p>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-5 pb-20">
+      
+      <div id="skeleton-wrap" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {skeletons.map(() => (
+          <div class="bg-[#1a1713] border border-[#c9a96e40] rounded-sm animate-pulse">
+            <div class="h-40 bg-[#2a2520]"></div>
+            <div class="p-4">
+              <div class="h-2 bg-[#2a2520] rounded w-1/2 mb-3"></div>
+              <div class="h-2 bg-[#2a2520] rounded w-full mb-2"></div>
+              <div class="h-2 bg-[#2a2520] rounded w-3/4"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div id="fav-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+
+      <div id="empty-state" class="hidden text-center py-20 px-5">
+        <i class="fa-regular fa-heart text-5xl text-[#7a6240] opacity-60 mb-5"></i>
+        <div class="text-[14px] font-bold tracking-[0.2em] uppercase text-[#f5f0e8] mb-2">Belum Ada Favorit</div>
+        <p class="text-[11px] tracking-[0.1em] text-[#ccc4b4] mb-7">Temukan parfum yang cocok dan simpan ke koleksi pribadimu.</p>
+        <a href="/app" class="inline-flex items-center gap-2 px-7 py-3 border border-[#c9a96e] text-[#c9a96e] text-[10px] font-bold tracking-[0.3em] uppercase rounded-sm hover:bg-[#c9a96e] hover:text-[#0d0b09] transition">
+          <i class="fa-solid fa-magnifying-glass"></i> Mulai Konsultasi
+        </a>
+      </div>
+
+    </div>
+
+    <footer class="text-center p-8 border-t border-[#c9a96e40] text-[9px] tracking-[0.25em] uppercase text-[#7a6240]">
+      <i class="fa-solid fa-flask-vial mr-2"></i> La Parfumerie &mdash; AI-Powered Olfactory Consultation
+    </footer>
+  </div>
+
+  <script>
+    const FavManager = {
+      config: { apiUrl: 'http://localhost:3000/api' },
+      state: {
+        token: localStorage.getItem('access_token'),
+        userId: localStorage.getItem('user_id')
+      },
+      images: [
+        'https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?w=400&q=80',
+        'https://images.unsplash.com/photo-1541643600914-78b084683702?w=400&q=80',
+        'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=400&q=80',
+        'https://images.unsplash.com/photo-1585386959984-a41552231658?w=400&q=80',
+      ],
+
+      checkAuth() {
+        if (!this.state.token || !this.state.userId) window.location.href = '/login';
+      },
+
+      logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+      },
+
+      showToast(title, msg, isError = false) {
+        // @ts-ignore
+        Swal.fire({
+          toast: true, position: 'top-end', icon: isError ? 'error' : 'success',
+          title: title, text: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true,
+          background: '#1a1713', color: '#f5f0e8'
+        });
+      },
+
+      formatDate(iso) {
+        if (!iso) return '';
+        return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      },
+
+      async loadFavorites() {
+        try {
+          const res = await fetch(`${this.config.apiUrl}/favorites/${this.state.userId}`, {
+            headers: { 'Authorization': `Bearer ${this.state.token}` }
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || 'Gagal memuat');
+          this.renderFavorites(json.data || []);
+        } catch (err) {
+          document.getElementById('skeleton-wrap').style.display = 'none';
+          document.getElementById('empty-state').style.display = 'block';
+          document.getElementById('header-count').innerHTML = 'Gagal memuat koleksi';
+          this.showToast('Gagal', err.message, true);
+        }
+      },
+
+      renderFavorites(items) {
+        document.getElementById('skeleton-wrap').style.display = 'none';
+        const grid = document.getElementById('fav-grid');
+        const emptyState = document.getElementById('empty-state');
+        const hCount = document.getElementById('header-count');
+        grid.innerHTML = '';
+
+        if (!items.length) {
+          emptyState.style.display = 'block';
+          hCount.innerHTML = 'Koleksimu masih kosong';
+          return;
+        }
+
+        hCount.innerHTML = `<span class="text-[#c9a96e] font-bold">${items.length}</span> parfum tersimpan`;
+
+        items.forEach((item, i) => {
+          const div = document.createElement('div');
+          div.className = 'fav-card flex flex-col h-full animate-fade-up';
+          div.innerHTML = `
+            <div class="relative h-40 overflow-hidden">
+              <img src="${this.images[i % this.images.length]}" class="w-full h-full object-cover grayscale-[20%] brightness-[0.85] hover:scale-110 transition duration-500">
+              <div class="absolute top-2 left-2 bg-[#0d0b09d9] border border-[#c9a96e] text-[#c9a96e] text-[8px] font-bold tracking-widest px-2 py-1 rounded-sm"><i class="fa-solid fa-heart mr-1"></i>Favorit</div>
+            </div>
+            <div class="p-4 flex-1">
+              <div class="text-[8px] font-bold tracking-[0.35em] text-[#c9a96e] uppercase mb-1">${item.perfume_brand}</div>
+              <div class="text-[13px] font-semibold text-[#f5f0e8] leading-tight mb-2">${item.perfume_name}</div>
+              <div class="text-[10px] font-light text-[#ccc4b4] italic line-clamp-2 mb-3"><i class="fa-solid fa-droplet text-[#7a6240] text-[8px] mr-1"></i>${item.notes}</div>
+              <div class="text-[9px] text-[#7a6240] tracking-widest pt-2 border-t border-[#c9a96e40]"><i class="fa-regular fa-calendar mr-1"></i> ${this.formatDate(item.created_at)}</div>
+            </div>
+            <div class="p-3 border-t border-[#c9a96e40]">
+              <button class="btn-remove" id="del-${item.id}">
+                <i class="fa-regular fa-trash-can"></i> Hapus
+              </button>
+            </div>
+          `;
+          grid.appendChild(div);
+
+          div.querySelector(`#del-${item.id}`).addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            this.removeFavorite(item.id, item.perfume_name, div, btn);
+          });
+        });
+      },
+
+      async removeFavorite(favId, name, cardElement, btn) {
+        // Swal konfirmasi sebelum menghapus
+        // @ts-ignore
+        const confirm = await Swal.fire({
+          title: 'Hapus Favorit?', text: `Yakin ingin menghapus "${name}"?`,
+          icon: 'warning', showCancelButton: true, confirmButtonColor: '#e74c3c', cancelButtonColor: '#2a2520',
+          confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', background: '#1a1713', color: '#f5f0e8'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        try {
+          const res = await fetch(`${this.config.apiUrl}/favorites/${favId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.state.token}` },
+            body: JSON.stringify({ userId: this.state.userId })
+          });
+
+          if (!res.ok) throw new Error('Gagal menghapus');
+
+          cardElement.classList.add('scale-95', 'opacity-0');
+          setTimeout(() => {
+            cardElement.remove();
+            const saved = new Set(JSON.parse(localStorage.getItem('parf_saved') || '[]'));
+            saved.delete(name);
+            localStorage.setItem('parf_saved', JSON.stringify([...saved]));
+            
+            const count = document.querySelectorAll('.fav-card').length;
+            if (count === 0) {
+              document.getElementById('empty-state').style.display = 'block';
+              document.getElementById('header-count').innerHTML = 'Koleksimu masih kosong';
+            } else {
+              document.getElementById('header-count').innerHTML = `<span class="text-[#c9a96e] font-bold">${count}</span> parfum tersimpan`;
+            }
+          }, 300);
+
+          this.showToast('Dihapus', `"${name}" telah dihapus.`);
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-regular fa-trash-can"></i> Hapus';
+          this.showToast('Gagal', err.message, true);
+        }
+      },
+
+      init() {
+        this.checkAuth();
+        this.loadFavorites();
+        document.getElementById('btnLogout')?.addEventListener('click', () => this.logout());
+      }
+    };
+
+    FavManager.init();
+  </script>
+</MainLayout>

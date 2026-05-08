@@ -1,0 +1,435 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Parfumerie — Konsultasi Aroma">
+  <style>
+    :root {
+      --gold: #c9a96e; --gold-light: #e8d5b0; --gold-dim: #7a6240;
+      --ink: #0d0b09; --ink-soft: #1a1713; --ink-mid: #2a2520;
+      --cream: #f5f0e8; --cream-dim: #ccc4b4;
+    }
+    body { background-color: var(--ink); color: var(--cream); }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 60% 50% at 20% 10%, rgba(201,169,110,0.07) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 60% at 80% 80%, rgba(201,169,110,0.05) 0%, transparent 70%),
+                  radial-gradient(ellipse 80% 30% at 50% 50%, rgba(13,11,9,0.6) 0%, transparent 100%);
+    }
+    .page-wrap { position: relative; z-index: 1; }
+  </style>
+
+  <div class="page-wrap">
+    <nav class="flex items-center justify-between p-5 px-10 border-b border-[#c9a96e40] sticky top-0 bg-[#0d0b09eb] backdrop-blur-md z-50">
+      <a href="/" class="text-[13px] font-bold tracking-[0.3em] uppercase text-[#c9a96e]">
+        <i class="fa-solid fa-flask-vial mr-2 text-[11px]"></i>La Parfumerie
+      </a>
+      <div class="flex gap-3">
+        <a href="/favorites" class="flex items-center gap-2 px-5 py-2 border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-bold tracking-[0.3em] uppercase rounded-sm hover:border-[#c9a96e] hover:text-[#c9a96e] transition">
+          <i class="fa-regular fa-heart"></i> Favorit
+          <span id="fav-count" class="hidden bg-[#c9a96e] text-[#0d0b09] text-[8px] w-4 h-4 rounded-full items-center justify-center">0</span>
+        </a>
+        <button id="btnLogout" class="flex items-center gap-2 px-5 py-2 border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-bold tracking-[0.3em] uppercase rounded-sm hover:border-red-500 hover:text-red-500 transition">
+          <i class="fa-solid fa-right-from-bracket"></i> Keluar
+        </button>
+      </div>
+    </nav>
+
+    <header class="text-center pt-14 pb-9 px-6">
+      <div class="text-[10px] font-semibold tracking-[0.35em] uppercase text-[#c9a96e] mb-4"><i class="fa-solid fa-flask-vial"></i>&ensp;Olfactory Intelligence</div>
+      <h1 class="text-4xl md:text-5xl font-light tracking-widest uppercase text-[#f5f0e8] m-0">La <span class="text-[#c9a96e] italic font-light">Parfumerie</span></h1>
+      <div class="flex items-center justify-center gap-4 mt-6 max-w-[300px] mx-auto text-[#7a6240]">
+        <div class="flex-1 h-px bg-gradient-to-r from-transparent to-[#7a6240]"></div>
+        <i class="fa-solid fa-star text-[8px] text-[#c9a96e]"></i>
+        <div class="flex-1 h-px bg-gradient-to-l from-transparent to-[#7a6240]"></div>
+      </div>
+      <p class="text-xs tracking-[0.2em] text-[#ccc4b4] mt-4">Temukan aroma yang berbicara tentang dirimu</p>
+    </header>
+
+    <div class="container mx-auto px-4">
+      <div class="bg-[rgba(201,169,110,0.08)] border border-[#c9a96e40] rounded-sm backdrop-blur-sm p-8 md:p-12 max-w-3xl mx-auto mb-16">
+        <div class="text-[9px] font-bold tracking-[0.4em] uppercase text-[#c9a96e] mb-8 flex items-center gap-3">
+          <i class="fa-regular fa-compass"></i> Konsultasi Aroma
+          <div class="flex-1 h-px bg-[#c9a96e40]"></div>
+        </div>
+
+        <div class="mb-7" id="group-waktu">
+          <div class="text-[9px] font-semibold tracking-[0.3em] uppercase text-[#ccc4b4] mb-3 flex items-center gap-2"><i class="fa-regular fa-clock text-[#c9a96e]"></i> Waktu Pemakaian</div>
+          <div class="flex flex-wrap gap-2">
+            <button class="chip active" data-val="siang"><i class="fa-regular fa-sun mr-2"></i>Siang</button>
+            <button class="chip" data-val="malam"><i class="fa-regular fa-moon mr-2"></i>Malam</button>
+          </div>
+        </div>
+
+        <div class="mb-7" id="group-acara">
+          <div class="text-[9px] font-semibold tracking-[0.3em] uppercase text-[#ccc4b4] mb-3 flex items-center gap-2"><i class="fa-regular fa-calendar-check text-[#c9a96e]"></i> Jenis Acara</div>
+          <div class="flex flex-wrap gap-2">
+            <button class="chip active" data-val="santai"><i class="fa-solid fa-mug-hot mr-2"></i>Santai</button>
+            <button class="chip" data-val="formal"><i class="fa-solid fa-briefcase mr-2"></i>Formal</button>
+            <button class="chip" data-val="kencan"><i class="fa-solid fa-heart mr-2"></i>Kencan</button>
+          </div>
+        </div>
+
+        <div class="mb-7" id="group-aroma">
+          <div class="text-[9px] font-semibold tracking-[0.3em] uppercase text-[#ccc4b4] mb-3 flex items-center gap-2"><i class="fa-solid fa-wind text-[#c9a96e]"></i> Preferensi Aroma</div>
+          <div class="flex flex-wrap gap-2">
+            <button class="chip active" data-val="fresh"><i class="fa-solid fa-leaf mr-2"></i>Fresh</button>
+            <button class="chip" data-val="woody"><i class="fa-solid fa-tree mr-2"></i>Woody</button>
+            <button class="chip" data-val="sweet"><i class="fa-solid fa-candy-cane mr-2"></i>Sweet</button>
+            <button class="chip" data-val="floral"><i class="fa-solid fa-spa mr-2"></i>Floral</button>
+          </div>
+        </div>
+
+        <div class="mb-7" id="group-gender">
+          <div class="text-[9px] font-semibold tracking-[0.3em] uppercase text-[#ccc4b4] mb-3 flex items-center gap-2"><i class="fa-solid fa-person-half-dress text-[#c9a96e]"></i> Untuk</div>
+          <div class="flex flex-wrap gap-2">
+            <button class="chip active" data-val="wanita"><i class="fa-solid fa-venus mr-2"></i>Wanita</button>
+            <button class="chip" data-val="pria"><i class="fa-solid fa-mars mr-2"></i>Pria</button>
+          </div>
+        </div>
+
+        <button id="btnCari" class="btn-gold mt-6"><i class="fa-solid fa-magnifying-glass mr-2"></i> Temukan Parfum Saya</button>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden text-center py-10 text-[#c9a96e]">
+      <div class="w-9 h-9 border-2 border-[#c9a96e40] border-t-[#c9a96e] rounded-full animate-spin mx-auto mb-4"></div>
+      <div class="text-[10px] tracking-[0.3em] uppercase text-[#7a6240]">Menganalisis preferensi aroma&hellip;</div>
+    </div>
+
+    <section id="result-section" class="max-w-6xl mx-auto px-5 pb-20 hidden">
+      <div class="text-center mb-10">
+        <div class="text-[9px] font-bold tracking-[0.4em] uppercase text-[#c9a96e] mb-2"><i class="fa-solid fa-star"></i>&ensp;Rekomendasi Eksklusif</div>
+        <h2 class="text-2xl font-light tracking-widest uppercase text-[#f5f0e8]">Parfum Untuk Anda</h2>
+      </div>
+      
+      <div id="empty-state" class="hidden text-center py-16 text-[#ccc4b4]">
+        <i class="fa-regular fa-face-sad-tear text-4xl mb-4 text-[#7a6240]"></i>
+        <p class="text-sm">Tidak ada hasil ditemukan.<br>Coba kombinasi preferensi lain.</p>
+      </div>
+
+      <div id="result-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+
+      <div id="load-more-wrap" class="hidden text-center mt-12 mb-4">
+        <button id="btnLoadMore" class="inline-flex items-center justify-center px-6 py-3 border border-[#c9a96e] text-[#c9a96e] text-[10px] font-bold tracking-[0.3em] uppercase rounded-sm hover:bg-[#c9a96e] hover:text-[#0d0b09] transition-all duration-300">
+          Lihat Lebih Banyak <i class="fa-solid fa-chevron-down ml-2"></i>
+        </button>
+      </div>
+    </section>
+
+    <footer class="text-center p-8 border-t border-[#c9a96e40] text-[9px] tracking-[0.25em] uppercase text-[#7a6240]">
+      <i class="fa-solid fa-flask-vial mr-2"></i> La Parfumerie &mdash; AI-Powered Olfactory Consultation
+    </footer>
+  </div>
+
+  <div id="productModal" class="fixed inset-0 z-100 hidden flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="modalOverlay"></div>
+    <div class="relative bg-[#1a1713] border border-[#c9a96e] rounded w-full max-w-md mx-4 shadow-2xl z-10 transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+      <div class="border-b border-[#c9a96e40] p-5 flex justify-between items-center">
+        <h5 class="text-[14px] font-bold tracking-[0.2em] uppercase text-[#c9a96e]"><i class="fa-solid fa-magnifying-glass mr-2"></i> Detail Aroma</h5>
+        <button id="closeModal" class="text-[#ccc4b4] hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-6 text-center">
+        <div id="mBrand" class="text-[10px] tracking-[0.3em] text-[#7a6240] uppercase mb-2">Brand</div>
+        <div id="mName" class="text-2xl font-light text-[#f5f0e8] mb-4">Nama Parfum</div>
+        
+        <div id="mNotes" class="text-[13px] font-light italic text-[#ccc4b4] mb-4 leading-relaxed">Notes...</div>
+        
+        <div id="mDesc" class="text-[11px] text-[#f5f0e8] mb-6 leading-relaxed bg-[#2a2520] p-4 rounded-sm border border-[#c9a96e40] text-left">
+          Deskripsi...
+        </div>
+        
+        <p class="text-[11px] text-[#c9a96e] mb-3">Cari produk ini di:</p>
+        <div class="grid grid-cols-2 gap-3">
+          <a href="#" target="_blank" id="btnShopee" class="p-3 bg-[#ee4d2d] text-white text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm border border-[#ee4d2d] hover:bg-transparent hover:text-[#ee4d2d] transition"><i class="fa-solid fa-bag-shopping"></i> Shopee</a>
+          <a href="#" target="_blank" id="btnTokped" class="p-3 bg-[#00aa5b] text-white text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm border border-[#00aa5b] hover:bg-transparent hover:text-[#00aa5b] transition"><i class="fa-solid fa-store"></i> Tokopedia</a>
+          <a href="#" target="_blank" id="btnTiktok" class="p-3 bg-black text-white text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm border border-white hover:bg-white hover:text-black transition"><i class="fa-brands fa-tiktok"></i> TikTok Shop</a>
+          <a href="#" target="_blank" id="btnGoogle" class="col-span-2 p-3 bg-transparent text-[#c9a96e] border border-[#c9a96e] text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm hover:bg-[#c9a96e] hover:text-[#0d0b09] transition"><i class="fa-brands fa-google"></i> Cari di Google</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const AppManager = {
+      config: {
+        apiUrl: 'http://localhost:3000/api'
+      },
+      state: {
+        token: localStorage.getItem('access_token'),
+        userId: localStorage.getItem('user_id'),
+        savedInSession: new Set(JSON.parse(localStorage.getItem('parf_saved') || '[]')),
+        selections: { waktu: 'siang', acara: 'santai', aroma: 'fresh', gender: 'wanita' },
+        hasShownAccuracyWarning: false 
+      },
+      images: [
+        'https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?w=400&q=80',
+        'https://images.unsplash.com/photo-1541643600914-78b084683702?w=400&q=80',
+        'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=400&q=80',
+        'https://images.unsplash.com/photo-1585386959984-a41552231658?w=400&q=80',
+      ],
+
+      showToast(title, msg, isError = false) {
+        // @ts-ignore
+        Swal.fire({
+          toast: true, position: 'top-end', icon: isError ? 'error' : 'success',
+          title: title, text: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true,
+          background: '#1a1713', color: '#f5f0e8'
+        });
+      },
+
+      checkAuth() {
+        if (!this.state.token || !this.state.userId) window.location.href = '/login';
+      },
+
+      logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+      },
+
+      initChips() {
+        ['waktu', 'acara', 'aroma', 'gender'].forEach(group => {
+          const container = document.getElementById(`group-${group}`);
+          const buttons = container?.querySelectorAll('.chip');
+          buttons?.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              buttons.forEach(b => b.classList.remove('active'));
+              const target = e.currentTarget;
+              target.classList.add('active');
+              this.state.selections[group] = target.dataset.val;
+            });
+          });
+        });
+      },
+
+      updateFavBadge() {
+        const badge = document.getElementById('fav-count');
+        if(!badge) return;
+        const count = this.state.savedInSession.size;
+        badge.textContent = count.toString();
+        badge.classList.toggle('hidden', count === 0);
+        badge.classList.toggle('flex', count > 0);
+      },
+
+      openModal(name, brand, notes, description) {
+        document.getElementById('mName').textContent = name;
+        document.getElementById('mBrand').textContent = brand;
+        document.getElementById('mNotes').textContent = notes;
+        
+        // Masukkan teks deskripsi
+        document.getElementById('mDesc').textContent = description || 'Deskripsi belum tersedia untuk parfum ini.';
+        
+        const q = encodeURIComponent(`${brand} ${name}`);
+        document.getElementById('btnShopee').setAttribute('href', `https://shopee.co.id/search?keyword=${q}`);
+        document.getElementById('btnTokped').setAttribute('href', `https://www.tokopedia.com/search?q=${q}`);
+        document.getElementById('btnTiktok').setAttribute('href', `https://www.tiktok.com/search?q=${q}`);
+        document.getElementById('btnGoogle').setAttribute('href', `https://www.google.com/search?q=${q}`);
+        
+        const modal = document.getElementById('productModal');
+        const content = document.getElementById('modalContent');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          content.classList.remove('scale-95', 'opacity-0');
+          content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      },
+
+      closeModal() {
+        const modal = document.getElementById('productModal');
+        const content = document.getElementById('modalContent');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+      },
+
+      async fetchRecommendations(isLoadMore = false) {
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('result-section');
+        const grid = document.getElementById('result-grid');
+        const emptyState = document.getElementById('empty-state');
+        const loadMoreWrap = document.getElementById('load-more-wrap');
+        const btnLoadMore = document.getElementById('btnLoadMore');
+
+        if (!isLoadMore) {
+          loading.classList.remove('hidden');
+          resultSection.classList.add('hidden');
+          grid.innerHTML = '';
+          emptyState.classList.add('hidden');
+          if(loadMoreWrap) loadMoreWrap.classList.add('hidden');
+          this.state.hasShownAccuracyWarning = false;
+        } else {
+          btnLoadMore.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat...';
+          btnLoadMore.disabled = true;
+        }
+
+        try {
+          const res = await fetch(`${this.config.apiUrl}/recommend`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.state.token}` },
+            body: JSON.stringify({ userId: this.state.userId, input_user: '', isLoadMore: isLoadMore, ...this.state.selections })
+          });
+          
+          const json = await res.json();
+          
+          if (!isLoadMore) {
+            loading.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+          } else {
+            btnLoadMore.innerHTML = 'Lihat Lebih Banyak <i class="fa-solid fa-chevron-down ml-2"></i>';
+            btnLoadMore.disabled = false;
+          }
+
+          if (!json.data || json.data.length === 0) {
+            if (!isLoadMore) emptyState.classList.remove('hidden');
+            if(loadMoreWrap) loadMoreWrap.classList.add('hidden');
+            return;
+          }
+
+          if (loadMoreWrap) {
+            if (json.hasMore) loadMoreWrap.classList.remove('hidden');
+            else loadMoreWrap.classList.add('hidden');
+          }
+
+// LOGIKA BARU: Transisi ke Zona Eksplorasi
+          if (json.isLowAccuracy && !this.state.hasShownAccuracyWarning) {
+            const divider = document.createElement('div');
+            divider.className = 'col-span-full flex flex-col items-center py-8 animate-fade-up';
+            divider.innerHTML = `
+              <div class="flex items-center gap-4 w-full text-[#7a6240]">
+                <div class="flex-1 h-px bg-gradient-to-r from-transparent to-[#c9a96e40]"></div>
+                <div class="text-[10px] font-bold tracking-[0.4em] uppercase text-[#c9a96e]">Opsi Alternatif</div>
+                <div class="flex-1 h-px bg-gradient-to-l from-transparent to-[#c9a96e40]"></div>
+              </div>
+              <p class="text-[9px] text-[#ccc4b4] mt-3 tracking-widest italic text-center">Rekomendasi utama telah habis. Aroma berikut memiliki karakteristik yang mungkin sedikit berbeda namun tetap relevan.</p>
+            `;
+            grid.appendChild(divider);
+            
+            // Tampilkan Swal berbentuk pop-up tengah (bukan toast) agar lebih jelas
+            // @ts-ignore
+            Swal.fire({
+              icon: 'info',
+              title: 'Pencarian Utama Habis',
+              text: 'Tidak ada lagi parfum yang sangat identik dengan pencarianmu. Kami akan menampilkan beberapa opsi alternatif yang masih memiliki kemiripan!',
+              confirmButtonText: 'Lihat Alternatif',
+              confirmButtonColor: '#c9a96e',
+              background: '#1a1713',
+              color: '#f5f0e8'
+            });
+            
+            this.state.hasShownAccuracyWarning = true;
+          }
+
+          // Loop Perbaikan (Tanpa duplikasi dan dengan String Escaping)
+// Loop Perbaikan (Tanpa duplikasi dan dengan String Escaping)
+          json.data.forEach((item, i) => {
+            const isSaved = this.state.savedInSession.has(item.name);
+            const div = document.createElement('div');
+            div.className = 'card-parfum flex flex-col h-full animate-fade-up';
+            
+            const currentCards = grid.querySelectorAll('.card-parfum').length;
+            const imgUrl = this.images[currentCards % this.images.length]; 
+
+            // Escape tanda kutip agar tidak merusak HTML onClick
+            const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeBrand = (item.brand || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeNotes = (item.notes || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            
+            // TAMBAHAN: Buat safeDesc (hapus enter \n agar tidak error di JS)
+            const safeDesc = (item.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+
+            const scoreBadge = `
+              <div class="absolute top-2 left-2 bg-[#c9a96e] text-[#0d0b09] text-[9px] font-black px-2 py-0.5 rounded-sm shadow-lg z-10">
+                ${item.ai_score}%
+              </div>
+            `;
+
+            const badgeHtml = json.isLowAccuracy 
+                ? `<div class="absolute top-2 right-2 bg-[#0d0b09d9] border border-[#7a6240] text-[#ccc4b4] text-[8px] font-bold tracking-widest px-2 py-1 rounded-sm z-10">Eksplorasi</div>`
+                : `<div class="absolute top-2 right-2 bg-[#0d0b09d9] border border-[#c9a96e] text-[#c9a96e] text-[8px] font-bold tracking-widest px-2 py-1 rounded-sm z-10">Top Match</div>`;
+
+            div.innerHTML = `
+              <div class="relative h-40 overflow-hidden cursor-pointer group" onclick="window.AppManager.openModal('${safeName}','${safeBrand}','${safeNotes}', '${safeDesc}')">
+                <img src="${imgUrl}" class="w-full h-full object-cover grayscale-[20%] brightness-[0.85] group-hover:scale-110 transition duration-500">
+                ${scoreBadge}
+                ${badgeHtml}
+              </div>
+              <div class="p-4 flex-1 pointer-events-none">
+                <div class="text-[8px] font-bold tracking-[0.35em] text-[#c9a96e] uppercase mb-1">${item.brand}</div>
+                <div class="text-[13px] font-semibold text-[#f5f0e8] leading-tight mb-2">${item.name}</div>
+                <div class="text-[10px] font-light text-[#ccc4b4] italic line-clamp-2"><i class="fa-solid fa-droplet text-[#7a6240] text-[8px] mr-1"></i>${item.notes}</div>
+              </div>
+              <div class="p-3 border-t border-[#c9a96e40]">
+                <button class="btn-save-parfum ${isSaved ? 'saved' : ''}" ${isSaved ? 'disabled' : ''}>
+                  <i class="fa-${isSaved ? 'solid' : 'regular'} fa-heart"></i> ${isSaved ? 'Tersimpan' : 'Simpan Favorit'}
+                </button>
+              </div>
+            `;
+            
+            grid.appendChild(div);
+
+            // Bind Event Listener ke tombol save yang spesifik di dalam elemen div ini
+            const saveBtn = div.querySelector('.btn-save-parfum');
+            saveBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.saveFavorite(item.name, item.brand, item.notes, saveBtn);
+            });
+          });
+
+        } catch (err) {
+          loading.classList.add('hidden');
+          if (isLoadMore && btnLoadMore) {
+            btnLoadMore.innerHTML = 'Gagal Memuat. Coba Lagi?';
+            btnLoadMore.disabled = false;
+          }
+          this.showToast('Gagal', 'Koneksi ke server terputus.', true);
+        }
+      },
+
+      async saveFavorite(name, brand, notes, btn) {
+        if(btn.disabled) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+        try {
+          const res = await fetch(`${this.config.apiUrl}/favorites`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.state.token}` },
+            body: JSON.stringify({ userId: this.state.userId, name, brand, notes })
+          });
+          if(res.status === 409 || res.ok) {
+            btn.classList.add('saved');
+            btn.innerHTML = '<i class="fa-solid fa-heart"></i> Tersimpan';
+            this.state.savedInSession.add(name);
+            localStorage.setItem('parf_saved', JSON.stringify([...this.state.savedInSession]));
+            this.updateFavBadge();
+            this.showToast('Sukses', `"${name}" tersimpan di favorit.`);
+          } else {
+            throw new Error('Gagal menyimpan');
+          }
+        } catch(err) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-regular fa-heart"></i> Simpan Favorit';
+          this.showToast('Error', err.message, true);
+        }
+      },
+
+      init() {
+        this.checkAuth();
+        this.updateFavBadge();
+        this.initChips();
+        
+        document.getElementById('btnLogout')?.addEventListener('click', () => this.logout());
+        document.getElementById('btnCari')?.addEventListener('click', () => this.fetchRecommendations(false));
+        document.getElementById('btnLoadMore')?.addEventListener('click', () => this.fetchRecommendations(true));
+        
+        document.getElementById('closeModal')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('modalOverlay')?.addEventListener('click', () => this.closeModal());
+        
+        // Expose untuk onClick Inline di HTML Modal
+        window.AppManager = this;
+      }
+    };
+
+    AppManager.init();
+  </script>
+</MainLayout>
