@@ -80,11 +80,11 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
           <div>
             <label class="block text-[#c9a96e] text-xs font-bold tracking-widest uppercase mb-2">Kegiatan</label>
             <select id="kegiatanInput" class="w-full bg-[#0d0b09] border border-[#c9a96e40] text-white p-4 rounded focus:border-[#c9a96e] focus:outline-none transition-all appearance-none cursor-pointer">
-              <option value="">Pilih Kegiatan</option>
-              <option value="kerja">Kerja / Kantor</option>
-              <option value="santai">Kasual / Santai</option>
-              <option value="kencan">Date Night / Kencan</option>
-              <option value="pesta">Pesta / Formal</option>
+              <option value="Casual / Daily">Santai / Harian</option>
+                <option value="Office / Formal">Kantor / Formal</option>
+                <option value="Sport / Outdoor">Olahraga / Outdoor</option>
+                <option value="Date / Romantic">Kencan / Romantis</option>
+                <option value="Party / Night">Pesta / Malam</option>
             </select>
           </div>
         </div>
@@ -167,15 +167,17 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
     </div>
   </div>
 
-  <script define:vars={{ API_BASE_URL }}>
+<script define:vars={{ API_BASE_URL }}>
     const AppManager = {
       state: {
         userId: null,
-        favoritesMap: {}, // Map untuk simpan { "Nama Parfum" : favId }
+        favoritesMap: {},
 
         rawCbf: [], allCbf: [], displayedCbf: 5, currentSortCbf: 'relevansi',
         rawCf: [], allCf: [], displayedCf: 5, currentSortCf: 'relevansi',
-        sortTimeout: null
+        sortTimeout: null,
+        
+        lastSearchKeywords: [] 
       },
   
       async init() {
@@ -188,7 +190,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
            } catch(e) {}
         }
         if (!this.state.userId) {
-            // Gunakan sessionId untuk guest jika tidak login
             let session = localStorage.getItem('sessionId');
             if (!session) {
                 session = 'guest_' + Math.random().toString(36).substr(2, 9);
@@ -213,7 +214,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
             }).then((result) => {
                 if (result.isConfirmed) {
                     localStorage.removeItem('user');
-                    // Jika memiliki route login, ubah path di bawah
                     window.location.href = '/login'; 
                 }
             });
@@ -221,10 +221,10 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
 
         document.getElementById('btnCari').addEventListener('click', () => this.fetchRecommendations());
         
-        // Paginasi
         document.getElementById('btnLoadMoreCbf').addEventListener('click', () => {
           this.state.displayedCbf += 5; this.renderCbf();
         });
+
         document.getElementById('btnLoadMoreCf').addEventListener('click', () => {
           this.state.displayedCf += 5; this.renderCf();
         });
@@ -252,74 +252,86 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
       },
 
       async toggleFavorite(btnElement, pStr) {
-    event.stopPropagation(); 
-    
-    const p = JSON.parse(pStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
-    const icon = btnElement.querySelector('i');
-    const favId = this.state.favoritesMap[p.nama];
+        // Cegah klik menjalar ke modal utama
+        if (window.event) window.event.stopPropagation();
+        
+        const p = JSON.parse(pStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+        const icon = btnElement.querySelector('i');
+        const nama = p.nama || p.nama_parfum || "Produk Tanpa Nama";
+        const favId = this.state.favoritesMap[nama];
 
-    try {
-        if (favId) {
-            // HAPUS SIMPANAN
-            const res = await fetch(`${API_BASE_URL}/api/favorites/${favId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: this.state.userId })
-            });
-            if (res.ok) {
-                delete this.state.favoritesMap[p.nama];
-                icon.className = "fa-solid fa-bookmark text-lg drop-shadow-md text-[#ccc4b4] opacity-50";
-                
-                if(typeof Swal !== 'undefined') {
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Dihapus dari daftar simpan', showConfirmButton: false, timer: 1500, background: '#1a1713', color: '#ccc4b4' });
-                }
-            }
-        } else {
-            // TAMBAH SIMPANAN
-            const payload = {
-                userId: this.state.userId,
-                name: p.nama,
-                brand: p.brand || "Bespoke",
-                notes: p.notes || "Klasifikasi aroma."
-            };
-
-            const res = await fetch(`${API_BASE_URL}/api/favorites`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await res.json();
-            
-            if (res.ok || res.status === 201) {
-                this.state.favoritesMap[p.nama] = result.data[0].id;
-                icon.className = "fa-solid fa-bookmark text-lg drop-shadow-md text-[#c9a96e] scale-110";
-                
-                if(typeof Swal !== 'undefined') {
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Berhasil disimpan!', showConfirmButton: false, timer: 1500, background: '#1a1713', color: '#c9a96e' });
+        try {
+            if (favId) {
+                // HAPUS SIMPANAN
+                const res = await fetch(`${API_BASE_URL}/api/favorites/${favId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: this.state.userId })
+                });
+                if (res.ok) {
+                    delete this.state.favoritesMap[nama];
+                    icon.className = "fa-solid fa-bookmark text-lg drop-shadow-md text-[#ccc4b4] opacity-50";
+                    if(typeof Swal !== 'undefined') {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Dihapus dari daftar simpan', showConfirmButton: false, timer: 1500, background: '#1a1713', color: '#ccc4b4' });
+                    }
                 }
             } else {
-                if(typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: result.error || 'Terjadi kesalahan sistem.', background: '#1a1713', color: '#ccc4b4', confirmButtonColor: '#c9a96e' });
+                // TAMBAH SIMPANAN
+                const payload = {
+                    userId: this.state.userId,
+                    name: nama,
+                    brand: p.brand || "Bespoke",
+                    notes: p.notes || "Klasifikasi aroma."
+                };
+
+                const res = await fetch(`${API_BASE_URL}/api/favorites`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                
+                if (res.ok || res.status === 201) {
+                    this.state.favoritesMap[nama] = result.data[0].id;
+                    icon.className = "fa-solid fa-bookmark text-lg drop-shadow-md text-[#c9a96e] scale-110";
+                    if(typeof Swal !== 'undefined') {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Berhasil disimpan!', showConfirmButton: false, timer: 1500, background: '#1a1713', color: '#c9a96e' });
+                    }
+                } else {
+                    if(typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: result.error || 'Terjadi kesalahan sistem.', background: '#1a1713', color: '#ccc4b4', confirmButtonColor: '#c9a96e' });
+                    }
                 }
             }
+        } catch(e) {
+            console.error("Error Favorite:", e);
         }
-    } catch(e) {
-        console.error("Error Favorite:", e);
-    }
-},
+      },
   
       async fetchRecommendations() {
+        const userInput = document.getElementById('userInput').value;
+        const gender = document.getElementById('genderInput').value;
+        const waktu = document.getElementById('timeInput').value;
+        const kegiatan = document.getElementById('kegiatanInput').value;
+        const vibe = document.getElementById('vibeInput').value;
+
         const payload = {
-          user_input: document.getElementById('userInput').value,
-          gender: document.getElementById('genderInput').value,
-          waktu_pemakaian: document.getElementById('timeInput').value,
-          kegiatan: document.getElementById('kegiatanInput').value,
-          wangi: document.getElementById('vibeInput').value
+          user_input: userInput,
+          gender: gender,
+          waktu_pemakaian: waktu,
+          kegiatan: kegiatan,
+          wangi: vibe
         };
+
+        // EKSTRAK KATA KUNCI UNTUK HIGHLIGHT
+        const stopWords = ['saya', 'aku', 'pengen', 'ingin', 'mau', 'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'buat', 'parfum', 'wangi', 'aroma', 'itu', 'ini', 'atau', 'cari'];
+        let combinedStr = `${userInput} ${gender} ${waktu} ${kegiatan} ${vibe}`;
         
+        let words = combinedStr.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+        this.state.lastSearchKeywords = [...new Set(words)].filter(w => w.length > 2 && !stopWords.includes(w));
+
         const loadingPromise = this.simulateLoadingOverlay();
-  
+
         try {
           const res = await fetch(`${API_BASE_URL}/api/recommend`, {
             method: 'POST',
@@ -361,7 +373,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
           
           const badgeCfEl = document.getElementById('badgeCf');
           if (badgeCfEl) badgeCfEl.innerText = `${this.state.allCf.length} Mahakarya`;
-          
+
           this.hideLoadingOverlay();
           this.renderCbf();
           this.renderCf();
@@ -496,7 +508,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
                 clearInterval(interval);
                 bar.style.width = '100%';
                 resolve();
-            }, 1200); 
+            }, 1200);
         });
       },
 
@@ -531,7 +543,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
         const btnLoadMore = document.getElementById('btnLoadMoreCbf');
         const toShow = this.state.allCbf.slice(0, this.state.displayedCbf);
         container.innerHTML = toShow.map(p => this.templateCard(p)).join('');
-        
+
         if (this.state.allCbf.length > this.state.displayedCbf) {
           btnLoadMore.classList.remove('hidden');
         } else {
@@ -545,13 +557,25 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
         const btnLoadMore = document.getElementById('btnLoadMoreCf');
         const toShow = this.state.allCf.slice(0, this.state.displayedCf);
         container.innerHTML = toShow.map(p => this.templateCard(p)).join('');
-        
+
         if (this.state.allCf.length > this.state.displayedCf) {
           btnLoadMore.classList.remove('hidden');
         } else {
           btnLoadMore.classList.add('hidden');
         }
         if (this.state.allCf.length > 0) document.getElementById('sectionCF').classList.remove('hidden');
+      },
+
+      highlightText(text) {
+        if (!text || this.state.lastSearchKeywords.length === 0) return text;
+        let highlighted = text;
+        this.state.lastSearchKeywords.forEach(keyword => {
+          // Gunakan Regex Global & Case-Insensitive
+          const regex = new RegExp(`(${keyword})`, 'gi');
+          // Beri styling highlight warna emas khas UI-mu
+          highlighted = highlighted.replace(regex, '<span class="bg-[#c9a96e]/20 text-[#c9a96e] font-bold px-1 rounded border border-[#c9a96e]/40">$1</span>');
+        });
+        return highlighted;
       },
   
       templateCard(p) {
@@ -560,7 +584,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
           const hargaNum = parseInt(p.harga) || 0;
           const harga = hargaNum > 0 ? `Rp ${hargaNum.toLocaleString('id-ID')}` : "Cek Harga di Toko";
           const img = p.url_foto || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=600&auto=format&fit=crop';
-          
           const isPopular = p.tipe === "CF" || (p.debug_alasan && p.debug_alasan.includes("CF"));
           const scoreBadge = isPopular ? '⭐ Populer' : `✨ Akurasi: ${p.match_score}`;
           
@@ -570,14 +593,14 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
           const bookmarkClass = isFav ? 'fa-solid text-[#c9a96e]' : 'fa-solid text-[#ccc4b4] opacity-50';
 
           return `
-            <div class="card-parfum flex flex-col h-full relative group" onclick="AppManager.openModal(${safeData})">
+            <div class="card-parfum flex flex-col h-full relative group" onclick="AppManager.openModal('${safeData}')">
               
               <div class="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-sm border border-[#c9a96e] text-[#c9a96e] text-[10px] px-2 py-1 rounded shadow-lg font-bold tracking-wide">
                 ${scoreBadge}
               </div>
               
               <div class="h-60 overflow-hidden bg-black w-full">
-                  <img src="${img}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-in-out" alt="${nama}">
+                <img src="${img}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-in-out" alt="${nama}">
               </div>
               
               <div class="p-4 flex flex-col flex-grow bg-[#1a1713]">
@@ -597,17 +620,29 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
       },
   
       openModal(p) {
+        // Parse kembali jika 'p' datang dari string
+        if (typeof p === 'string') p = JSON.parse(p.replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+
         const overlay = document.getElementById('modalOverlay');
         const box = document.getElementById('modalBox');
         const modalBody = document.getElementById('modalBody');
         
+        // PERBAIKAN: Gunakan variabel nama (bukan rawNama) agar merujuk seragam di seluruh fungsi
         const nama = p.nama || p.nama_parfum || "Detail Produk";
         const deskripsi = p.deskripsi || p.description || "Sebuah harmoni wewangian yang dirancang secara khusus.";
+        const notes = p.notes || "Klasifikasi aroma rahasia oleh perfumer.";
+        
+        // Eksekusi fungsi Highlight
+        const hlNama = this.highlightText(nama);
+        const hlDeskripsi = this.highlightText(deskripsi);
+        const hlNotes = this.highlightText(notes);
+
         const link = p.link_pembelian || p.url_produk || "#";
         const img = p.url_foto || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=600&auto=format&fit=crop';
         const brand = p.brand || "Bespoke Collection";
         const hargaNum = parseInt(p.harga) || 0;
         const harga = hargaNum > 0 ? `Rp ${hargaNum.toLocaleString('id-ID')}` : "Harga Tidak Tersedia";
+        
         const isPopular = p.tipe === "CF" || (p.debug_alasan && p.debug_alasan.includes("CF"));
         const matchLabel = isPopular ? 'Direkomendasikan Komunitas' : `Kecocokan Profil: ${p.match_score}`;
 
@@ -615,7 +650,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
         const tokpedLink = `https://www.tokopedia.com/search?q=${encodedQuery}`;
         const shopeeLink = `https://shopee.co.id/search?keyword=${encodedQuery}`;
         const googleLink = `https://www.google.com/search?q=${encodedQuery}`;
-
+        
         const safeData = JSON.stringify(p).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
         const isFav = !!this.state.favoritesMap[nama];
         const bookmarkClass = isFav ? 'fa-solid text-[#c9a96e]' : 'fa-solid text-[#ccc4b4] opacity-50';
@@ -632,7 +667,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
                   <p class="text-[#c9a96e] text-xs tracking-[0.2em] uppercase font-bold mb-2">${brand}</p>
                   
                   <div class="flex justify-between items-start gap-4 mb-4">
-                      <h2 class="text-3xl md:text-4xl text-white font-bold leading-tight m-0">${nama}</h2>
+                      <h2 class="text-3xl md:text-4xl text-white font-bold leading-tight m-0">${hlNama}</h2>
                       <button class="hover:scale-110 transition-transform flex-shrink-0 mt-1" onclick="AppManager.toggleFavorite(this, '${safeData}')" title="Simpan untuk nanti">
                         <i class="fa-bookmark text-2xl md:text-3xl drop-shadow-md transition-colors duration-300 ${bookmarkClass}"></i>
                       </button>
@@ -643,7 +678,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
                   </div>
                   
                   <p class="text-2xl text-[#ccc4b4] mb-6 font-light">${harga}</p>
-                  
+                 
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
                      <a href="${link}" target="_blank" rel="noopener noreferrer" class="col-span-2 md:col-span-1 btn-gold w-full text-center py-2 flex items-center justify-center text-[10px]">
                        Link Asli
@@ -669,17 +704,16 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
               
               <div class="mb-8">
                 <h4 class="text-white text-xl font-bold mb-3 border-b border-[#c9a96e40] pb-2 inline-block">Kisah Aroma</h4>
-                <p class="text-[#ccc4b4] text-sm leading-relaxed text-justify">${deskripsi}</p>
+                <p class="text-[#ccc4b4] text-sm leading-relaxed text-justify">${hlDeskripsi}</p>
               </div>
               
               <div class="bg-[#1a1713] border border-[#c9a96e40] p-5 rounded">
                 <strong class="text-[#c9a96e] text-xs uppercase tracking-widest block mb-2">Main Accords / Notes</strong>
-                <p class="text-[#ccc4b4] text-sm leading-relaxed m-0">${p.notes || "Klasifikasi aroma rahasia oleh perfumer."}</p>
+                <p class="text-[#ccc4b4] text-sm leading-relaxed m-0">${hlNotes}</p>
               </div>
             </div>
           </div>
         `;
-        
         overlay.classList.remove('opacity-0', 'pointer-events-none');
         box.classList.remove('scale-95');
         box.classList.add('scale-100');
