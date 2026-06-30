@@ -411,7 +411,9 @@ const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:300
         const brand = p.brand || 'Bespoke';
         const hargaNum = parseInt(p.harga) || 0;
         const harga = hargaNum > 0 ? `Rp ${hargaNum.toLocaleString('id-ID')}` : 'Harga tidak tersedia';
-        const q = encodeURIComponent(`${brand} ${nama} parfum`);
+        // Brand placeholder/kosong jangan ikut ke query pencarian toko (cukup nama produk)
+        const brandReal = (p.brand && !/^(tidak ada brand|bespoke|bespoke collection|-)$/i.test(p.brand.trim())) ? p.brand.trim() : '';
+        const q = encodeURIComponent(`${brandReal} ${nama} parfum`.replace(/\s+/g, ' ').trim());
         const isFav = !!this.state.favoritesMap[nama];
         const bookmarkClass = isFav ? 'fa-solid text-[#c9a96e]' : 'fa-solid text-[#ccc4b4] opacity-50';
 
