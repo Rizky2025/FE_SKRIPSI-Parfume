@@ -31,6 +31,15 @@
   .card-parfum {
     @apply bg-[#1a1713] border border-[#c9a96e40] rounded-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-[#c9a96e] cursor-pointer;
   }
+  .result-tab {
+    @apply cursor-pointer;
+  }
+  .result-tab:hover {
+    @apply text-[#c9a96e];
+  }
+  .result-tab.active {
+    @apply border-[#c9a96e] text-[#c9a96e];
+  }
   .btn-save-parfum {
     @apply w-full p-2 bg-[#2a2520] border border-[#c9a96e40] text-[#ccc4b4] text-[9px] font-semibold tracking-widest uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-2;
   }

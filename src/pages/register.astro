@@ -38,7 +38,7 @@ import MainLayout from '../layouts/MainLayout.astro';
             <i class="fa-solid fa-paper-plane"></i>
           </button>
           <div class="text-center text-sm">
-             Sudah punya akun? <a href="/login" class="text-blue-500 hover:text-blue-800 transition">Login di sini</a>
+             Sudah punya akun? <a href="/" class="text-blue-500 hover:text-blue-800 transition">Login di sini</a>
           </div>
         </div>
       </form>
@@ -49,7 +49,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     const RegisterManager = {
       config: {
         apiUrl: 'http://localhost:3000/api/register',
-        redirectUrl: '/login'
+        redirectUrl: '/'
       },
       elements: {
         form: document.getElementById('registerForm'),

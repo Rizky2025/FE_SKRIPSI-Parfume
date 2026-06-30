@@ -95,12 +95,12 @@ const skeletons = [1, 2, 3, 4, 5];
       ],
 
       checkAuth() {
-        if (!this.state.token || !this.state.userId) window.location.href = '/login';
+        if (!this.state.token || !this.state.userId) window.location.href = '/';
       },
 
       logout() {
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = '/';
       },
 
       showToast(title, msg, isError = false) {
